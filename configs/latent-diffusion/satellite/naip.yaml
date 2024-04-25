@@ -1,0 +1,117 @@
+# finetuned from u-net model trained on imagenet
+# use dino ssl embeddings for conditioning
+
+model:
+  base_learning_rate: 1e-4
+  target: ldm.models.diffusion.ddpm.LatentDiffusion
+  params:
+    linear_start: 0.0015
+    linear_end: 0.0195
+    num_timesteps_cond: 1
+    log_every_t: 200
+    timesteps: 1000
+    first_stage_key: image
+    cond_stage_key: hybrid
+    image_size: 64
+    channels: 3
+    cond_stage_trainable: true 
+    conditioning_key: crossattn
+    use_ema: False
+    track_fid: False
+
+    scheduler_config: # 1000 warmup steps
+      target: ldm.lr_scheduler.LambdaLinearScheduler
+      params:
+        warm_up_steps: [ 1000 ]
+        cycle_lengths: [ 10000000000000 ] # incredibly large number to prevent corner cases
+        f_start: [ 1.e-6 ]
+        f_max: [ 1. ]
+        f_min: [ 1. ]
+
+    unet_config:
+      target: ldm.modules.diffusionmodules.openaimodel.UNetModel
+      params:
+        use_checkpoint: True
+        use_fp16: True
+        image_size: 64
+        in_channels: 3
+        out_channels: 3
+        model_channels: 192
+        attention_resolutions: [8, 4, 2]
+        num_res_blocks: 2
+        channel_mult: [ 1,2,3,5 ]
+        num_heads: 1
+        use_spatial_transformer: True
+        transformer_depth: 1
+        context_dim: 512
+        ckpt_path: "/home/myellapragad/summer23/latent-diffusion/models/ldm/cin256-v2/unet.ckpt"
+
+    first_stage_config:
+      target: ldm.models.autoencoder.VQModelInterface
+      params:
+        ckpt_path: "/home/myellapragad/summer23/latent-diffusion/models/first_stage_models/vq-f4/model.ckpt"
+        embed_dim: 3
+        n_embed: 8192
+        ddconfig:
+          double_z: false
+          z_channels: 3
+          resolution: 256
+          in_channels: 3
+          out_ch: 3
+          ch: 128
+          ch_mult:
+          - 1
+          - 2
+          - 4
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+        lossconfig:
+          target: torch.nn.Identity
+
+    cond_stage_config:
+      target: ldm.modules.encoders.modules.PatchEmbedder
+      params:
+        patch_ssl_key: "feat_patch"
+        patch_embed_dim: 768
+        normalize_ssl: True
+
+data:
+  target: main.DataModuleFromConfig
+  params:
+    batch_size: 256
+    num_workers: 24
+    wrap: false
+    train:
+      target: ldm.data.hybrid_cond.naip_ssl.NAIPDataset
+      params:
+        config:
+          root: /home/myellapragad/fall23
+          split: train
+          p_uncond: 0.1
+    validation:
+      target: ldm.data.hybrid_cond.naip_ssl.NAIPDataset
+      params:
+        config:
+          root: /home/myellapragad/fall23
+          split: test
+
+
+lightning:
+
+  callbacks:
+    metrics_over_trainsteps_checkpoint:
+      params:
+        every_n_train_steps: 10000
+    image_logger:
+      target: main.ImageLogger
+      params:
+        batch_frequency: 5000
+        max_images: 8
+        increase_log_steps: False
+        log_images_kwargs:
+          quantize_denoised: False
+          ddim_steps: 100
+  trainer:
+    benchmark: True
+    precision: 16
