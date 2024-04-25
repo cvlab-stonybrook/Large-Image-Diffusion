@@ -49,12 +49,12 @@ We provide the following trained models
 
 
 
-
-
 ## Training
 
-To train a diffusion model, create a config file similar to [this](./configs/latent-diffusion/crc/only_patch_20x.yaml). 
-
+* **Customization:** Create a config file similar to [./configs/latent-diffusion/crc/only_patch_20x.yaml](./configs/latent-diffusion/crc/only_patch_20x.yaml) to train your own diffusion model.
+* **Sample Dataset:** We provide a sample dataset [here](./notebooks/dataset_samples/brca_hipt_patches.pickle) . Study it to understand the required data format.
+* **Loading Data:** See [./ldm/data/hybrid_cond/crc_only_patch.py](./ldm/data/hybrid_cond/crc_only_patch.py) for an example of how to load data.
+* **Embedding Guidance:** We feed the SSL embedding via cross-attention (See Line 52 of [./ldm/modules/encoders/modules.py](./ldm/modules/encoders/modules.py)).
 
 
 Example training command:
@@ -65,9 +65,10 @@ python main.py -t --gpus 0,1 --base ldm/data/hybrid_cond/crc_only_patch.py
 
 ## Sampling
 
-[This notebook](./notebooks/brca_patch_synthesis.ipynb) shows how to sample patches (256 * 256) from SSL embeddings
+Refer to these notebooks for generating images using the provided models:
 
-[This notebook](./notebooks/large_image_generation.ipynb) demonstrates generating large images (1024 * 1024) using SSL-conditioned diffusion model
+* **Image Patches:** [./notebooks/brca_patch_synthesis.ipynb](./notebooks/brca_patch_synthesis.ipynb)
+* **Large Images:** [./notebooks/large_image_generation.ipynb](./notebooks/large_image_generation.ipynb) 
 
 
 ## Bibtex
