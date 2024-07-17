@@ -60,7 +60,7 @@ We provide the following trained models
 Example training command:
 
 ```
-python main.py -t --gpus 0,1 --base ldm/data/hybrid_cond/crc_only_patch.py
+python main.py -t --gpus 0,1 --base configs/latent-diffusion/crc/only_patch_20x.yaml
 ```
 
 ## Sampling
