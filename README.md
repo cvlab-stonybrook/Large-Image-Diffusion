@@ -74,10 +74,11 @@ Refer to these notebooks for generating images using the provided models:
 ## Bibtex
 
 ```
-@article{graikos2023learned,
+@inproceedings{graikos2024learned,
   title={Learned representation-guided diffusion models for large-image generation},
   author={Graikos, Alexandros and Yellapragada, Srikar and Le, Minh-Quan and Kapse, Saarthak and Prasanna, Prateek and Saltz, Joel and Samaras, Dimitris},
-  journal={arXiv preprint arXiv:2312.07330},
-  year={2023}
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={8532--8542},
+  year={2024}
 }
 ```
